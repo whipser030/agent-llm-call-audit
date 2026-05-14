@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Logs and OS noise
+*.log
+.DS_Store
+
+# TypeScript / tooling
+*.tsbuildinfo
+
+# Local env (never commit secrets)
+.env
+.env.*
+
+# Test / coverage (if added later)
+coverage/
+dist-coverage/
