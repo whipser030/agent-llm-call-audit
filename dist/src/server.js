@@ -1,5 +1,9 @@
+import { readFileSync, existsSync } from "node:fs";
 import { createServer } from "node:http";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { renderLlmAuditViewer } from "./viewer.js";
+const HERMES_FAVICON_PATH = join(dirname(fileURLToPath(import.meta.url)), "viewer-assets", "hermes-favicon.png");
 export async function startLlmAuditServer(store, options = {}) {
     const host = options.host ?? "127.0.0.1";
     const port = options.port ?? 8764;
@@ -50,6 +54,22 @@ async function dispatch(req, res, store, options) {
     res.setHeader("cache-control", "no-store");
     if (method !== "GET" && method !== "HEAD") {
         writeJson(res, 405, { error: { code: "method_not_allowed", message: "Only GET is supported" } });
+        return;
+    }
+    if (url.pathname === "/hermes-favicon.png") {
+        if (!existsSync(HERMES_FAVICON_PATH)) {
+            writeJson(res, 404, { error: { code: "not_found", message: "Hermes favicon not found" } });
+            return;
+        }
+        const body = readFileSync(HERMES_FAVICON_PATH);
+        res.writeHead(200, {
+            "content-type": "image/png",
+            "content-length": body.length,
+        });
+        if (method !== "HEAD")
+            res.end(body);
+        else
+            res.end();
         return;
     }
     if (url.pathname === "/" || url.pathname === "/index.html") {

@@ -193,6 +193,9 @@ describe("LlmAuditServer", () => {
         expect(html).not.toContain('class="markdown"');
         expect(html).toContain("Loading recent OpenClaw tasks");
         expect(html).toContain("json-string");
+        expect(html).toContain("data:image/svg+xml");
+        expect(html).toContain("%23ff4500");
+        expect(html).not.toContain("/hermes-favicon.png");
     });
     it("serves custom viewer branding", async () => {
         server = await startLlmAuditServer(store, {
@@ -231,9 +234,14 @@ describe("Hermes monitor entry", () => {
         expect(payload.calls).toHaveLength(1);
         const html = await fetch(`${hermesMonitor.url}/`).then((res) => res.text());
         expect(html).toContain("Hermes LLM Audit Monitor");
-        expect(html).toContain("viewer-hint");
+        expect(html).toContain("/hermes-favicon.png");
         expect(html).toContain("#ff3eb5");
         expect(html).toContain("audit-shell--hermes");
+        const fav = await fetch(`${hermesMonitor.url}/hermes-favicon.png`);
+        expect(fav.status).toBe(200);
+        expect(fav.headers.get("content-type")).toContain("image/png");
+        const favBuf = Buffer.from(await fav.arrayBuffer());
+        expect(favBuf.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
     });
 });
 describe("Openclaw plugin entry", () => {

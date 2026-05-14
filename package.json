@@ -22,7 +22,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && mkdir -p dist/src/viewer-assets && cp -f src/viewer-assets/hermes-favicon.png dist/src/viewer-assets/",
     "lint": "tsc -p tsconfig.json --noEmit",
     "monitor:hermes": "node dist/src/hermes.js",
     "test": "vitest run"

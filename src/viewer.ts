@@ -6,6 +6,13 @@ export type LlmAuditViewerOptions = {
   autoLoadLatestTask?: boolean;
 };
 
+/** OpenClaw audit viewer favicon (inline SVG data URL). */
+const OPENCLAW_FAVICON_HREF =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(
+    `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="14" fill="#ff4500" opacity="0.12"/><rect width="72" height="72" rx="14" fill="none" stroke="#ff4500" stroke-width="1.5"/><text x="36" y="38" font-size="32" text-anchor="middle" dominant-baseline="middle">🦞</text><rect x="12" y="56" width="4" height="6" rx="2" fill="#ff4500" opacity="0.4"/><rect x="19" y="52" width="4" height="10" rx="2" fill="#ff4500" opacity="0.6"/><rect x="26" y="54" width="4" height="7" rx="2" fill="#ff4500" opacity="0.8"/><rect x="33" y="50" width="4" height="12" rx="2" fill="#ff4500"/><rect x="40" y="53" width="4" height="8" rx="2" fill="#ff4500" opacity="0.8"/><rect x="47" y="55" width="4" height="6" rx="2" fill="#ff4500" opacity="0.6"/><rect x="54" y="57" width="4" height="4" rx="2" fill="#ff4500" opacity="0.4"/></svg>`,
+  );
+
 export function renderLlmAuditViewer(options: LlmAuditViewerOptions = {}): string {
   if (options.variant === "openclaw" || options.variant === "hermes") {
     return renderModernShellViewer(options);
@@ -19,24 +26,54 @@ function renderLegacyViewer(options: LlmAuditViewerOptions): string {
   const taskPlaceholder = escapeTemplate(options.taskPlaceholder ?? "Task ID / runId");
   const autoLoadLatestTask = options.autoLoadLatestTask ?? false;
   return `<!doctype html>
-<html lang="en">
+<html lang="en" class="theme-system">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="${OPENCLAW_FAVICON_HREF}" type="image/svg+xml" />
   <title>${title}</title>
   <style>
-    :root { color-scheme: light dark; --bg: #0b1020; --panel: #121a2f; --muted: #8fa0c0; --text: #edf2ff; --line: #263453; --accent: #7aa2ff; --ok: #4ade80; --warn: #facc15; }
+    html.theme-dark {
+      color-scheme: dark;
+      --bg: #0b1020; --panel: #121a2f; --muted: #8fa0c0; --text: #edf2ff; --line: #263453; --accent: #7aa2ff; --ok: #4ade80; --warn: #facc15;
+      --input-bg: #0f1730; --btn-bg: #1c2a52;
+    }
+    html.theme-light {
+      color-scheme: light;
+      --bg: #f6f8fa; --panel: #ffffff; --muted: #59636e; --text: #1f2328; --line: #d0d7de; --accent: #0969da; --ok: #1a7f37; --warn: #9a6700;
+      --input-bg: #f6f8fa; --btn-bg: #f6f8fa;
+    }
+    html.theme-system {
+      color-scheme: light dark;
+      --bg: #0b1020; --panel: #121a2f; --muted: #8fa0c0; --text: #edf2ff; --line: #263453; --accent: #7aa2ff; --ok: #4ade80; --warn: #facc15;
+      --input-bg: #0f1730; --btn-bg: #1c2a52;
+    }
+    @media (prefers-color-scheme: light) {
+      html.theme-system {
+        --bg: #f6f8fa; --panel: #ffffff; --muted: #59636e; --text: #1f2328; --line: #d0d7de; --accent: #0969da; --ok: #1a7f37; --warn: #9a6700;
+        --input-bg: #f6f8fa; --btn-bg: #f6f8fa;
+      }
+    }
     * { box-sizing: border-box; }
     body { margin: 0; font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
-    header { padding: 18px 24px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    header { padding: 18px 24px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+    .legacy-header-left { flex: 1 1 auto; min-width: 0; }
+    .legacy-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+    .theme-bar { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .theme-bar .theme-btn {
+      width: auto; min-width: 52px; padding: 6px 10px; font-size: 12px; font-weight: 600;
+      border: 1px solid var(--line); border-radius: 8px; background: var(--btn-bg); color: var(--text); cursor: pointer;
+    }
+    .theme-bar .theme-btn:hover { border-color: var(--accent); }
+    .theme-bar .theme-btn.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
     h1 { margin: 0; font-size: 20px; }
     h3 { margin: 14px 0 10px; }
     .subtle { color: var(--muted); }
     .layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); min-height: calc(100vh - 73px); }
     aside { border-right: 1px solid var(--line); padding: 16px; overflow: auto; }
     main { padding: 16px; overflow: auto; }
-    input, select, button { border: 1px solid var(--line); border-radius: 8px; background: #0f1730; color: var(--text); padding: 9px 10px; }
-    button { cursor: pointer; background: #1c2a52; }
+    input, select, button { border: 1px solid var(--line); border-radius: 8px; background: var(--input-bg); color: var(--text); padding: 9px 10px; }
+    button { cursor: pointer; background: var(--btn-bg); }
     button:hover { border-color: var(--accent); }
     .row { display: flex; gap: 8px; margin-bottom: 10px; }
     .row input { min-width: 0; flex: 1; }
@@ -59,11 +96,18 @@ function renderLegacyViewer(options: LlmAuditViewerOptions): string {
 </head>
 <body>
   <header>
-    <div>
+    <div class="legacy-header-left">
       <h1>${title}</h1>
       <div class="subtle">${subtitle}</div>
     </div>
-    <div id="health" class="subtle">Loading...</div>
+    <div class="legacy-header-right">
+      <div class="theme-bar" role="toolbar" aria-label="Color theme">
+        <button type="button" class="theme-btn" data-theme="light" title="浅色">浅色</button>
+        <button type="button" class="theme-btn" data-theme="dark" title="深色">深色</button>
+        <button type="button" class="theme-btn" data-theme="system" title="跟随系统">系统</button>
+      </div>
+      <div id="health" class="subtle">Loading...</div>
+    </div>
   </header>
   <div class="layout">
     <aside>
@@ -92,6 +136,27 @@ function renderLegacyViewer(options: LlmAuditViewerOptions): string {
     </main>
   </div>
   <script>
+    const THEME_KEY = "llm-audit-viewer-theme";
+    function getStoredTheme() {
+      const v = localStorage.getItem(THEME_KEY);
+      if (v === "light" || v === "dark" || v === "system") return v;
+      return "system";
+    }
+    function applyTheme(mode) {
+      const root = document.documentElement;
+      root.classList.remove("theme-light", "theme-dark", "theme-system");
+      root.classList.add("theme-" + mode);
+      localStorage.setItem(THEME_KEY, mode);
+      document.querySelectorAll(".theme-bar .theme-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.theme === mode);
+      });
+    }
+    function initTheme() {
+      applyTheme(getStoredTheme());
+      document.querySelectorAll(".theme-bar .theme-btn").forEach((btn) => {
+        btn.addEventListener("click", () => applyTheme(btn.dataset.theme || "system"));
+      });
+    }
     const state = { tasks: [], calls: [], selected: null, taskId: "" };
     const $ = (id) => document.getElementById(id);
     const fmt = (v) => v ? new Date(v).toLocaleString() : "-";
@@ -191,6 +256,7 @@ function renderLegacyViewer(options: LlmAuditViewerOptions): string {
     $("searchInput").addEventListener("input", renderCalls);
     $("statusFilter").addEventListener("change", renderCalls);
     $("modelFilter").addEventListener("change", renderCalls);
+    initTheme();
     boot();
   </script>
 </body>
@@ -222,14 +288,46 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
     `
       : "";
 
+  const faviconLink =
+    variant === "hermes"
+      ? `<link rel="icon" href="/hermes-favicon.png" type="image/png">`
+      : `<link rel="icon" href="${OPENCLAW_FAVICON_HREF}" type="image/svg+xml">`;
+
   return `<!doctype html>
-<html lang="en" class="${htmlClass}">
+<html lang="en" class="${htmlClass} theme-system">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  ${faviconLink}
   <title>${title}</title>
   <style>
-    :root {
+    html.audit-shell.theme-dark {
+      color-scheme: dark;
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #20242d;
+      --fg: #e8edf3;
+      --muted: #9aa4b2;
+      --border: #303642;
+      --accent: #7aa2f7;
+      --danger: #ff7b72;
+      --ok: #8bd5a0;
+      --warn: #facc15;
+    }
+    html.audit-shell.theme-light {
+      color-scheme: light;
+      --bg: #f6f8fa;
+      --panel: #ffffff;
+      --panel-2: #f0f3f6;
+      --fg: #1f2328;
+      --muted: #59636e;
+      --border: #d0d7de;
+      --accent: #0969da;
+      --danger: #cf222e;
+      --ok: #1a7f37;
+      --warn: #9a6700;
+    }
+    html.audit-shell.theme-system {
       color-scheme: light dark;
       --bg: #0f1115;
       --panel: #171a21;
@@ -243,7 +341,7 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
       --warn: #facc15;
     }
     @media (prefers-color-scheme: light) {
-      :root {
+      html.audit-shell.theme-system {
         --bg: #f6f8fa;
         --panel: #ffffff;
         --panel-2: #f0f3f6;
@@ -253,6 +351,7 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
         --accent: #0969da;
         --danger: #cf222e;
         --ok: #1a7f37;
+        --warn: #9a6700;
       }
     }
     * { box-sizing: border-box; }
@@ -266,7 +365,7 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: 6px;
+      gap: 8px;
       padding: 8px 12px 10px;
       border-bottom: 1px solid var(--border);
       background: var(--panel);
@@ -274,14 +373,47 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
       top: 0;
       z-index: 2;
     }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+    }
+    .header-top h1 { margin: 0; }
+    .theme-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+    .theme-bar .theme-btn {
+      width: auto;
+      min-width: 48px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--fg);
+      cursor: pointer;
+    }
+    .theme-bar .theme-btn:hover { border-color: var(--accent); }
+    .theme-bar .theme-btn.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
     .header-row {
       display: flex;
       gap: 12px;
       align-items: center;
+      width: 100%;
     }
     h1 {
       flex: 0 0 auto;
-      margin: 0;
       font-size: 16px;
       font-weight: 800;
       white-space: nowrap;
@@ -300,7 +432,18 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
       gap: 8px;
       align-items: center;
     }
-    input, select, button {
+    .controls input, .controls select, .controls > button {
+      width: 100%;
+      min-width: 0;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--fg);
+      font-size: 12px;
+    }
+    #taskList button.summary,
+    #callList button.summary {
       width: 100%;
       min-width: 0;
       padding: 6px 8px;
@@ -311,13 +454,13 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
       font-size: 12px;
     }
     button { cursor: pointer; font-weight: 600; }
-    .audit-shell--openclaw button:hover { border-color: #2aa7c8; }
+    .audit-shell--openclaw .controls button:hover { border-color: #2aa7c8; }
     main {
       display: grid;
       grid-template-columns: minmax(200px, 240px) minmax(260px, 340px) minmax(0, 1fr);
       gap: 10px;
       padding: 12px;
-      height: calc(100vh - 52px);
+      height: calc(100vh - 100px);
     }
     .col {
       min-height: 0;
@@ -418,7 +561,8 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
     .error { color: var(--danger); }
     @media (max-width: 1100px) {
       .header-row { display: block; }
-      h1 { margin-bottom: 8px; }
+      .header-top { flex-wrap: wrap; }
+      h1 { margin-bottom: 0; }
       .controls { grid-template-columns: 1fr; }
       main { grid-template-columns: 1fr; height: auto; }
       .col { max-height: 420px; }
@@ -427,8 +571,15 @@ function renderModernShellViewer(options: LlmAuditViewerOptions): string {
 </head>
 <body>
   <header>
-    <div class="header-row">
+    <div class="header-top">
       <h1>${title}</h1>
+      <div class="theme-bar" role="toolbar" aria-label="配色">
+        <button type="button" class="theme-btn" data-theme="light" title="浅色">浅色</button>
+        <button type="button" class="theme-btn" data-theme="dark" title="深色">深色</button>
+        <button type="button" class="theme-btn" data-theme="system" title="跟随系统">系统</button>
+      </div>
+    </div>
+    <div class="header-row">
       <div class="controls">
         <input id="taskInput" type="text" placeholder="${taskPlaceholder}">
         <button id="loadTask" type="button">Load ID</button>
@@ -472,6 +623,27 @@ function buildModernShellScript(brand: "openclaw" | "hermes", autoLoadLatestTask
   L.push(`const $ = (id) => document.getElementById(id);`);
   L.push(`const fmt = (v) => (v ? new Date(v).toLocaleString() : "-");`);
   L.push(`const json = (v) => JSON.stringify(v ?? null, null, 2);`);
+  L.push(`const THEME_KEY = "llm-audit-viewer-theme";`);
+  L.push(`function getStoredTheme() {`);
+  L.push(`  const v = localStorage.getItem(THEME_KEY);`);
+  L.push(`  if (v === "light" || v === "dark" || v === "system") return v;`);
+  L.push(`  return "system";`);
+  L.push(`}`);
+  L.push(`function applyTheme(mode) {`);
+  L.push(`  const root = document.documentElement;`);
+  L.push(`  root.classList.remove("theme-light", "theme-dark", "theme-system");`);
+  L.push(`  root.classList.add("theme-" + mode);`);
+  L.push(`  localStorage.setItem(THEME_KEY, mode);`);
+  L.push(`  document.querySelectorAll(".theme-bar .theme-btn").forEach((btn) => {`);
+  L.push(`    btn.classList.toggle("active", btn.dataset.theme === mode);`);
+  L.push(`  });`);
+  L.push(`}`);
+  L.push(`function initTheme() {`);
+  L.push(`  applyTheme(getStoredTheme());`);
+  L.push(`  document.querySelectorAll(".theme-bar .theme-btn").forEach((btn) => {`);
+  L.push(`    btn.addEventListener("click", () => applyTheme(btn.dataset.theme || "system"));`);
+  L.push(`  });`);
+  L.push(`}`);
   L.push(`async function api(path) {`);
   L.push(`  const res = await fetch(path, { headers: { accept: "application/json" } });`);
   L.push(`  if (!res.ok) throw new Error(await res.text());`);
@@ -657,6 +829,7 @@ function buildModernShellScript(brand: "openclaw" | "hermes", autoLoadLatestTask
   L.push(`$("searchInput").addEventListener("input", () => { if (state.calls.length) renderCalls(); });`);
   L.push(`$("statusFilter").addEventListener("change", () => { if (state.calls.length) renderCalls(); });`);
   L.push(`$("modelFilter").addEventListener("change", () => { if (state.calls.length) renderCalls(); });`);
+  L.push(`initTheme();`);
   L.push(`boot();`);
   return L.join("\n");
 }
