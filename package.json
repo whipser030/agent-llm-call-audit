@@ -1,0 +1,42 @@
+{
+  "name": "agent-openclaw-local-monitor",
+  "version": "0.1.0",
+  "description": "Local SQLite audit capture and viewer for OpenClaw and Hermes LLM calls.",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "agent-hermes-llm-monitor": "dist/src/hermes.js"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./dist/src/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.4.15-beta.1"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "monitor:hermes": "node dist/src/hermes.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

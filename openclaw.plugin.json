@@ -1,0 +1,24 @@
+{
+  "id": "agent-openclaw-local-monitor",
+  "name": "Openclaw LLM Audit Viewer",
+  "description": "Captures Openclaw LLM prompts and responses into a local SQLite audit viewer on port 8764.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      },
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "number"
+      },
+      "auditHome": {
+        "type": "string"
+      }
+    }
+  }
+}
